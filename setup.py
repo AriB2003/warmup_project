@@ -21,7 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
             'teleop = warmup_project.teleop:main',
-            'square = warmup_project.square:main'
+            'square = warmup_project.square:main',
+            'wall_follower = warmup_project.wall_follower:main'
         ],
     },
 )
