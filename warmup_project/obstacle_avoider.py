@@ -30,7 +30,7 @@ class ObstacleAvoiderNode(Node):
         #Ensures a scan has been completed before writing data
         if (self.scan_results != None):
             
-            sum_of_vectors = [0.0,0.0]
+            sum_of_vectors = [0.0,0.0] # [x,y] - x is forward and y is left
             # Generate vector from all relevant points
             for i in range(45):
                 current_vector = calculate_potential_vector(i, self.scan_results[i])
@@ -41,20 +41,44 @@ class ObstacleAvoiderNode(Node):
                 current_vector = calculate_potential_vector(i, self.scan_results[i])
                 sum_of_vectors[0] += current_vector[0]
                 sum_of_vectors[1] += current_vector[1]
+            
+            # Add vector to pull the robot forward
+            sum_of_vectors[0] += 10
 
+            gradient_r = sum_of_vectors[0]^2 + sum_of_vectors[1]^2
+            gradient_theta = math.atan2(sum_of_vectors[1]/sum_of_vectors[0])
+
+            # Constrain to reasonable speeds and distances
+            gradient_r = constrain(gradient_r, -0.1, 0.5)
+            gradient_theta = constrain(gradient_theta, -1, 1)
+
+
+            # Publish to robot
+            msg = Twist()
+            msg.linear.x = gradient_r
+            msg.angular.z = gradient_theta
+            self.publisher.publish(msg)
+            # Get better at coding - love noah
 
             
 def calculate_potential_vector(angle, distance):
-    relative_weight = 45 - min(abs(360-angle), abs(0-angle)) # points in the middle should be more heavily weighted
+    angle_off_heading = min(abs(360-angle), abs(0-angle)) 
+    relative_weight = (-angle_off_heading^2 + 2025)*.1 # points in the middle should be more heavily weighted
     theta = angle+180
     r = (0.1/distance) * relative_weight
-    potential_vector = [r*math.cos(math.radians(theta)), r*math.sin(math.radians(theta))]
+    potential_vector = [r*math.cos(math.radians(theta)), r*math.sin(math.radians(theta))] # [x,y] - x is forward and y is left
     return potential_vector
+
+def constrain(val, min_val, max_val):
+
+    if val < min_val: return min_val
+    if val > max_val: return max_val
+    return val
 
 def main(args=None):
     """Initialize our node, run it, and cleanup on shutdown."""
     rclpy.init(args=args)
-    node = WallFollowerNode()
+    node = ObstacleAvoiderNode()
     rclpy.spin(node)
     rclpy.shutdown()
 
