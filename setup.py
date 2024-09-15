@@ -22,7 +22,8 @@ setup(
         'console_scripts': [
             'teleop = warmup_project.teleop:main',
             'square = warmup_project.square:main',
-            'wall_follower = warmup_project.wall_follower:main'
+            'wall_follower = warmup_project.wall_follower:main',
+            'person_follower = warmup_project.person_follower:main'
         ],
     },
 )
