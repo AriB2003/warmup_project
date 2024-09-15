@@ -31,7 +31,7 @@ class DriveSquareNode(Node):
         elif (self.counter % 100 < 90):
             # Set velocity to pi/6 so it will turn 90 degrees in exactly 3 seconds
             cmd_vel.linear.x = 0.0
-            cmd_vel.angular.z = .5236
+            cmd_vel.angular.z = .54
         # wait for a second to allow the neato to stop fully
         else: 
             cmd_vel.linear.x = 0.0
