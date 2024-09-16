@@ -21,7 +21,7 @@ class ObstacleAvoiderNode(Node):
     def process_scan(self, msg):
         """Reads scan data from the Neato's LIDAR sensor"""
         self.scan_results = msg.ranges
-        print(msg.ranges)
+        # print(msg.ranges)
         
     def run_loop(self):
         """Compares the heading of the neato to the heading of the closest wall,
@@ -31,7 +31,8 @@ class ObstacleAvoiderNode(Node):
         if (self.scan_results != None):
             
             sum_of_vectors = [0.0,0.0] # [x,y] - x is forward and y is left
-            # Generate vector from all relevant points
+            
+            # Generate vector from all relevant points (from -45 to 45 degrees)
             for i in range(45):
                 current_vector = calculate_potential_vector(i, self.scan_results[i])
                 sum_of_vectors[0] += current_vector[0]
@@ -42,16 +43,20 @@ class ObstacleAvoiderNode(Node):
                 sum_of_vectors[0] += current_vector[0]
                 sum_of_vectors[1] += current_vector[1]
             
-            # Add vector to pull the robot forward
-            sum_of_vectors[0] += 10
 
-            gradient_r = sum_of_vectors[0]^2 + sum_of_vectors[1]^2
-            gradient_theta = math.atan2(sum_of_vectors[1]/sum_of_vectors[0])
+            # Add vector to pull the robot forward
+            sum_of_vectors[0] += .4
+
+            print(sum_of_vectors)
+
+            # calculate linear and angular velocity from vector
+            gradient_r = (sum_of_vectors[0]**2) + (sum_of_vectors[1]**2)
+            gradient_theta = math.atan2(sum_of_vectors[1],sum_of_vectors[0])
 
             # Constrain to reasonable speeds and distances
-            gradient_r = constrain(gradient_r, -0.1, 0.5)
-            gradient_theta = constrain(gradient_theta, -1, 1)
-
+            gradient_r = float(constrain(gradient_r, -0.1, 0.5))
+            gradient_theta = float(constrain(gradient_theta, -1, 1))
+            print(gradient_theta)
 
             # Publish to robot
             msg = Twist()
@@ -63,14 +68,15 @@ class ObstacleAvoiderNode(Node):
             
 def calculate_potential_vector(angle, distance):
     angle_off_heading = min(abs(360-angle), abs(0-angle)) 
-    relative_weight = (-angle_off_heading^2 + 2025)*.1 # points in the middle should be more heavily weighted
+    relative_weight = min((-angle_off_heading**2 + 2025), 1800) # points in the middle should be more heavily weighted
+    # print(relative_weight)
     theta = angle+180
-    r = (0.1/distance) * relative_weight
+    r = ((4 * (10**-6))/(distance**2)) * relative_weight # 4*10^-6 is factor for scaling
     potential_vector = [r*math.cos(math.radians(theta)), r*math.sin(math.radians(theta))] # [x,y] - x is forward and y is left
+    print(potential_vector)
     return potential_vector
 
 def constrain(val, min_val, max_val):
-
     if val < min_val: return min_val
     if val > max_val: return max_val
     return val
