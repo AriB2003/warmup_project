@@ -10,13 +10,13 @@ class DriveSquareNode(Node):
         super().__init__("drive_square_node")
         #Create timer that calls the loop every 0.1 seconds
         timer_period = 0.1
-        self.timer = self.create_timer(timer_period, self.run_loop)
+        self.timer = self.create_timer(timer_period, self.run_square_loop)
         #Create counter to track time
         self.counter = 0
         #Create publisher to neato's velocity topic
         self.publisher = self.create_publisher(Twist, "cmd_vel", 10)
 
-    def run_loop(self):
+    def run_square_loop(self):
         "Drives the neato in a square."
         # initialize a velocity message for the neato
         cmd_vel = Twist()
