@@ -26,7 +26,7 @@ class ObstacleAvoiderNode(Node):
     def process_scan(self, msg):
         """Reads scan data from the Neato's LIDAR sensor"""
         self.scan_results = msg.ranges
-        print(msg.ranges)
+        # print(msg.ranges)
         
     def run_loop(self):
         """Calculate a vector for the Neato's velocity based on the repellant vectors 
@@ -54,7 +54,7 @@ class ObstacleAvoiderNode(Node):
             # Add vector to pull the robot forward
             sum_of_vectors[0] += .4
 
-            print(sum_of_vectors)
+            # print(sum_of_vectors)
 
             # calculate linear and angular velocity from vector
             gradient_r = (sum_of_vectors[0]**2) + (sum_of_vectors[1]**2)
@@ -63,7 +63,7 @@ class ObstacleAvoiderNode(Node):
             # Constrain to reasonable speeds and distances
             gradient_r = float(constrain(gradient_r, -0.1, 0.5))
             gradient_theta = float(constrain(gradient_theta, -1, 1))
-            print(gradient_theta)
+            # print(gradient_theta)
 
             # Publish to robot
             msg = Twist()
@@ -85,7 +85,7 @@ def calculate_potential_vector(angle, distance):
     r = ((r_scaling_factor)/(distance**2)) * relative_weight
     # convert polar to cartesian
     potential_vector = [r*math.cos(math.radians(theta)), r*math.sin(math.radians(theta))] # [x,y] - x is forward and y is left
-    print(potential_vector)
+    # print(potential_vector)
     return potential_vector
 
 def constrain(val, min_val, max_val):
