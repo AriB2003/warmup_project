@@ -28,8 +28,10 @@ class PersonFollowerNode(Node):
         # print(self.current_heading)
 
     def process_scan(self, msg):
-        self.scan_results = [4-v if not math.isinf(v) else 0 for v in msg.ranges]
-        self.front_scan = [msg.ranges[i] if not math.isinf(msg.ranges[i]) else 0.25 for i in range(-15,15)]
+        self.scan_results = [8-2*v if not math.isinf(v) else 0 for v in msg.ranges]
+        for i in range(-15,15):
+            self.scan_results[i]+=(25-abs(i))/25
+        self.front_scan = [msg.ranges[i] if not math.isinf(msg.ranges[i]) else 0.25 for i in range(-20,20)]
         # print(self.scan_results)
         
     def run_loop(self):
@@ -62,11 +64,12 @@ class PersonFollowerNode(Node):
             # print(sum(speed)/5)
             msg = Twist()
             # self.angular = 0.35
-            self.angular = sum(speed)/5
-            msg.angular.z = self.angular
-            forward = sum(self.front_scan)/len(self.front_scan)-0.25
+            self.angular = sum(speed)/10
+            msg.angular.z = max(min(0.7,self.angular),-0.7)
+            forward = sum(self.front_scan)/len(self.front_scan)/4-0.07
             # print(self.front_scan)
-            if abs(sum(speed)/5)<0.7:
+            # if abs(sum(speed)/5)<0.7:
+            if True:
                 msg.linear.x = forward
                 pass
             else:
@@ -83,8 +86,8 @@ class PersonFollowerNode(Node):
     def detect_person(self):
         # print(self.last_direction)
         for i, d in enumerate(self.last_direction):
-            self.scan_results[min(d, len(self.scan_results)-1)] = 2+i
-        kernel = [-4,-2,-2,-2,-2,-2,-1,-1,-1,1,2,2,4,6,8,6,4,2,2,1,-1,-1,-1,-2,-2,-2,-2,-2,-4]
+            self.scan_results[min(d, len(self.scan_results)-1)] += 2+i
+        kernel = [-4,-4,-4,-3,-2,-1,-1,-1,-1,1,1,1,1,2,2,4,6,8,6,4,2,2,1,1,1,1,-1,-1,-1,-2,-3,-4,-4,-4,-4]
         o = len(kernel)//2
         self.scan_results = self.scan_results[-o:]+self.scan_results+self.scan_results[:o]
         convolution = []
