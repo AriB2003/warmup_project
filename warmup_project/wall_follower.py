@@ -2,10 +2,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
-import math
-
-bump_status = None
-        
+import math      
 
 class WallFollowerNode(Node):
     """This is a wall following node which inherits from Node."""
@@ -17,11 +14,12 @@ class WallFollowerNode(Node):
         self.timer = self.create_timer(timer_period, self.run_loop)
         self.sub = self.create_subscription(LaserScan, 'scan', self.process_scan, 10)
         self.publisher = self.create_publisher(Twist, "cmd_vel", 10)
+        self.Kp = 0.2 # For proportional control
 
     def process_scan(self, msg):
         """Reads scan data from the Neato's LIDAR sensor"""
         self.scan_results = msg.ranges
-        print(msg.ranges)
+        # print(msg.ranges)
         
     def run_loop(self):
         """Compares the heading of the neato to the heading of the closest wall,
@@ -51,7 +49,7 @@ class WallFollowerNode(Node):
             else:
                 right_wall = True
 
-            print(right_wall)
+            # print(right_wall)
                 
 
             # If right wall, use right side data to determine heading. Default is to left side data
@@ -89,11 +87,11 @@ class WallFollowerNode(Node):
                 if math.isnan(heading) == False:
                     msg = Twist()
                     msg.linear.x = 0.2
-                    msg.angular.z = float(heading/5)
+                    msg.angular.z = float(heading* self.Kp)
                     self.publisher.publish(msg)
-                    # print(msg)
+                    print(True)
             except (UnboundLocalError, TypeError): # If the sensor doesn't find any values in the given range, do nothing
-                pass
+                print(False)
         
 
 def main(args=None):
