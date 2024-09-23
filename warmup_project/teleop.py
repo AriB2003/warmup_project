@@ -72,7 +72,7 @@ class TeleopNode(Node):
         self.lin = min(0.5, max(-0.5, self.lin))
         self.ang = min(0.5, max(-0.5, self.ang))
         # Calculate the total speed
-        total = abs(self.lin) + abs(self.ang) or 1
+        total = self.lin+self.ang or 1
         # Scale the speeds based on their contribution for normalization
         self.lin = self.lin * min(1, self.lin / total)
         self.ang = self.ang * min(1, self.ang / total)
